@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .custom-form {
+    max-width: 400px;
+    margin: auto;
+  }
+  .custom-form label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  .custom-form input[type="text"],
+  .custom-form input[type="file"],
+  .custom-form button {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+  .custom-form button {
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+  }
+  .file-list {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 30px 40px 10px 10px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgb(0 86 255);
+    color: black;
+  }
+  .file-list h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+ 
+  .file-item1 {
+    list-style: none;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #4835d4;
+    box-shadow: 0 0 10px #86b7fe;
+    border-radius: 4px;
+    background-color: #86b7fe;
+    color: #4835d4;
+  }
+  .file-item1 a {
+    color: #f8f9fa;
+    text-decoration: none;
+  }
+  .file-item1 a:hover {
+    text-decoration: underline;
+  }
+
+  .file-item2 {
+    list-style: none;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ffffff;
+    box-shadow: 0 0 10px 0px #4835d4;
+    border-radius: 4px;
+    background-color: #86b7fe;
+    color: #f8f9fa;
+  }
+  .file-item2 a {
+    color: #4835d4;
+    text-decoration: none;
+  }
+  .file-item2 a:hover {
+    text-decoration: underline;
+  }
+
+  {% comment %} tutu {% endcomment %}
+  .bg-indigo{
+    background-color:#4835d4;
+    border-radius: 0px 10px 10px 0px;
+  }
+  .bg-white{
+    background-color:white;
+    border-radius: 10px 0px 0px 10px;
+    
+  }
+
+  {% comment %} dd {% endcomment %}
+  .custom-form-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.custom-form {
+    width: 500px; 
+}
+  
+</style>
+<div class="px-3 py-2 border-bottom mb-3">
+    <div class="container d-flex flex-wrap justify-content-center">
+        {% if user.is_authenticated %}
+          <form method="get"  action="{% url 'search' %}"class="d-flex col-12 col-lg-auto mb-2 mb-lg-0 me-lg-auto" role="search">
+            <input type="search" name="query" class="form-control" placeholder="Search..." aria-label="Search">
+            <button type="submit">Search</button>
+          </form>
+        {% endif %}
+          <div class="text-end">
+              {% if user.is_authenticated %}
+                  
+                  <button type="button" class="btn btn-light text-dark me-2">Welcome,{{user.username}}</button>
+                  <a  class="btn btn-primary" href="#Dashboard">Dashboard</a>
+                  <button type="submit" class="btn btn-primary" onclick="window.location.href='{% url 'logout' %}'">Logout</button>
+                  
+                  
+              {% else %}
+                  <button type="button" class="btn btn-light text-dark me-2" onclick="window.location.href='{% url 'login' %}'">Login</button>
+                  <button type="button" class="btn btn-primary" onclick="window.location.href='{% url 'register' %}'">Sign-up</button>
+              {% endif %}
+
+          </div>
+     </div>
+</div>
+
+<div>
+  {% if user.is_authenticated%}
+  
+      <div class="mb-3">
+        {% for message in messages %}
+        
+            {% if message.tags == 'error' %}
+                <div class="alert alert-danger" role="alert">
+                    {{ message }}
+                </div>
+            {% else %}
+                <div class="alert alert-{{message.tags}}" role="alert">
+                  {{ message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+      </div>
+      <div class="container custom-form-container">
+        <div>
+            <h1 class="text-center mt-4 mb-3">Upload File</h1>
+            <form method="post" enctype="multipart/form-data" class="custom-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_title">Title:</label>
+                    <input type="text" name="title" id="id_title" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="id_file">Select File:</label>
+                    <input type="file" name="file" id="id_file" class="form-control-file">
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+        </div>
+      </div>
+    
+      <section id="Dashboard"class="h-100 h-custom gradient-custom-2">
+        <div class="container py-5 h-100">
+          <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-12">
+              <div class="card card-registration card-registration-2" style="border-radius: 15px;">
+                <div class="card-body p-0">
+                  <div class="row g-0">
+                    <div class="col-lg-6 bg-white">
+                      <div class="p-5">
+                        <h3 class="fw-normal mb-5" style="color:#4835d4;">Uploaded Files</h3>
+
+                          <ul>
+                            {% for file in user_files %}
+                              <li class="file-item1 "> 
+                                <h3>{{ file.title }}</h3>  
+                                
+                                <h6>Uploaded at: {{ file.uploaded_at }}</h6>
+                              
+                                <form class="d-flex" action="{% url 'share_file' file.id %}" method="post">
+                                  {% csrf_token %}
+                                  <h6 for="user_to_share">Share with:</h6>
+                                  <select class="ms-1" id="user_to_share" name="user_to_share">
+                                      <option value="">.</option>
+                                      {% for user in all_users %}
+                                          <option value="{{ user.id }}">{{ user.username }}</option>
+                                      {% endfor %}
+                                  </select>
+                                  <button class="ms-1"type="submit">Share</button>
+
+                                  <h5 class="ms-auto mb-0"><a  href="{{ file.file.url }}">View</a></h5>
+                                  
+                              </form>
+                              
+                              </li>
+                            {% empty %}
+                              <li class="file-item1">No files uploaded yet.</li>
+                            {% endfor %}
+                          </ul>
+                      </div>
+                    </div>
+
+
+                    <div class="col-lg-6 bg-indigo text-white">
+                      <div class="p-5">
+                        <h3 class="fw-normal mb-5">Recieved Files</h3>  
+                        <ul>
+                              {% for file in recieved_files %}
+                                  <li class="file-item2">
+                                    <h3>{{ file.title }}</h3>
+                                    <h6>Uploaded at: {{ file.uploaded_at }} </h6>
+                                    
+                                    
+                                    <div class="d-flex">
+                                      <h6>Shared by:</h6>
+                                      <select style="appearance: none;padding: 0px 5px;"class="ms-1" name="" id="">
+                                        <option value="">{{ file.user.username }}</option>
+                                      </select>
+                                      <h5 class="ms-auto mb-0"><a  href="{{ file.file.url }}">View</a></h5>
+                                      <h5 class="ms-2 mb-0"><a href="{% url 'download_file' file.id %}">Download</a></h5>
+                                    </div>
+                                    
+                                  </li>
+                          
+                              {% empty %}
+                                  <li class="file-item2">No  files  Recieved.</li>
+                              {% endfor %}
+                        </ul>
+                        
+                        <h3 class="fw-normal mt-2 mb-3">Files Shared</h3>
+                        <ul>
+                              {% for file in shared_by_me %}
+                                  <li class="file-item2">
+                                      <h3>{{ file.title }}</h3>
+                                      <h6>Uploaded at: {{ file.uploaded_at }} </h6>
+                                      <strong>Shared with:</strong>
+                                      <ul>
+                                          {% for user in file.shared_with.all %}
+                                              <li>{{ user.username }}</li>
+                                          {% endfor %}
+                                      </ul>
+                               
+                                  </li>
+                              {% empty %}
+                                  <li class="file-item2">No files shared by you with other users.</li>
+                              {% endfor %}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+  {% endif %}
+</div>
+
+
+
+
+
+{% endblock content %}
+
